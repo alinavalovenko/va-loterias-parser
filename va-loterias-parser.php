@@ -16,7 +16,8 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
         {
             DEFINE('LXP_DIR', plugin_dir_path(__FILE__));
             DEFINE('LXP_URL', plugin_dir_url(__FILE__));
-            DEFINE('LXP_NAME', plugin_basename(__FILE__));
+            DEFINE('LXP_NAME', 'Loterias XML Parser');
+            DEFINE('LXP_SLUG', 'loterias-xml-parser');
             DEFINE('LXP_CORE', LXP_DIR . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR);
             DEFINE('LXP_VIEW', LXP_DIR . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR);
             DEFINE('LXP_TEMP', LXP_DIR . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR);
