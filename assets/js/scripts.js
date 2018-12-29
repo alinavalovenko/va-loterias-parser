@@ -1,9 +1,9 @@
 jQuery(window).ready(function($) {
     var settingsForm = $('#lxp-submit-form');
+    var updateDataBtn = $('#lxp-update-data');
 
     settingsForm.submit(event, function () {
         event.preventDefault();
-        console.log(settingsForm);
         var domain =  settingsForm.find('input[name="loterias-xml-parser_option[lxp-domain]"]').val();
         var langID =  settingsForm.find('input[name="loterias-xml-parser_option[lxp-language-id]"]').val();
         var affID =  settingsForm.find('input[name="loterias-xml-parser_option[lxp-tl-aff-id]"]').val();
@@ -17,7 +17,17 @@ jQuery(window).ready(function($) {
         };
 
         $.post(lxpObject.url, data, function (response) {
-            console.log(response);
+            alert(response);
+        });
+    });
+
+    updateDataBtn.click(function () {
+        var data = {
+            action: 'lpx_update_date',
+        };
+
+        $.post(lxpObject.url, data, function (response) {
+            alert(response);
         });
     });
 });

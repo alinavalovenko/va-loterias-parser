@@ -1,13 +1,15 @@
 <?php
-
+require_once ('class-lxp-connector.php');
 class LXP_Admin {
 	private $options;
 
 	public function __construct() {
+		$this->options = get_option( LXP_SLUG . '_opstion' );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_menu', array( $this, 'lpx_add_admin_page' ) );
 		add_action( 'admin_init', array( $this, 'page_init' ) );
 		add_action( 'wp_ajax_lpx_save_options', array( $this, 'save_options' ) );
+		add_action( 'wp_ajax_lpx_update_date', array( $this, 'update_data' ) );
 	}
 
 	public function lpx_add_admin_page() {
@@ -113,7 +115,7 @@ class LXP_Admin {
 	public function lxp_domain_callback() {
 		printf(
 			'<input type="text"   name="' . LXP_SLUG . '_option[lxp-domain]" value="%s"/>',
-			isset( $this->options['lxp-domain'] ) ? esc_attr( $this->options['lxp-domain'] ) : 'https://www.thelotter.com/rss.xml?'
+			isset( $this->options['lxp-domain'] ) ? esc_attr( $this->options['lxp-domain'] ) : 'https://www.thelotter.com/rss.xml'
 		);
 	}
 
@@ -139,13 +141,34 @@ class LXP_Admin {
 	}
 
 	function save_options() {
-		$domain = $_POST['domain'];
-		$lang_id = $_POST['langid'];
-		$aff_id = $_POST['affid'];
-		$chan = $_POST['chan'];
+		try {
+			$options['lxp-domain']      = $_POST['domain'];
+			$options['lxp-language-id'] = $_POST['langid'];
+			$options['lxp-tl-aff-id']   = $_POST['affid'];
+			$options['lxp-chan-id']     = $_POST['chan'];
+			update_option( LXP_SLUG . '_option', $options, 'no' );
+			echo 'Setting saved!';
+		} catch ( Exception $ex ) {
+			echo $ex->getMessage();
+		}
+		wp_die();
+	}
 
-
-		echo $domain;
+	function update_data() {
+		try {
+			$options = get_option(LXP_SLUG . '_option');
+			$api_url = 'https://www.thelotter.com/rss.xml?languageId=2&tl_affid=8831&chan=loteriasonline';
+			if ( isset($options ) ) {
+				$api_url = $options['lxp-domain'] .
+				           '?languageId=' . $options['lxp-language-id'] .
+				           '&tl_affid=' . $options['lxp-tl-aff-id'] .
+				           '&chan=' . $options['lxp-chan-id'];
+			}
+			$xml_content = new Lxp_Connector($api_url);
+			echo $xml_content->data;
+		} catch ( Exception $ex ) {
+			echo $ex->getMessage();
+		}
 		wp_die();
 	}
 
