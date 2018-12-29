@@ -7,7 +7,7 @@ class LXP_Admin {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_menu', array( $this, 'lpx_add_admin_page' ) );
 		add_action( 'admin_init', array( $this, 'page_init' ) );
-		add_action( 'wp_ajax_lpx_save_options', array($this, 'save_options') );
+		add_action( 'wp_ajax_lpx_save_options', array( $this, 'save_options' ) );
 	}
 
 	public function lpx_add_admin_page() {
@@ -27,6 +27,7 @@ class LXP_Admin {
 	 */
 	public function create_admin_page() {
 		$this->enqueue_scripts();
+		$this->options = get_option( LXP_SLUG . '_option' );
 		require_once( LXP_VIEW . 'settings.php' );
 	}
 
@@ -137,8 +138,15 @@ class LXP_Admin {
 		);
 	}
 
-	function save_options(){
+	function save_options() {
+		$domain = $_POST['domain'];
+		$lang_id = $_POST['langid'];
+		$aff_id = $_POST['affid'];
+		$chan = $_POST['chan'];
 
+
+		echo $domain;
+		wp_die();
 	}
 
 }
