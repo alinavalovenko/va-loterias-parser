@@ -39,6 +39,7 @@ class LXP_Admin {
 		wp_register_script( LXP_SLUG . '-scripts', LXP_URL . '/assets/js/scripts.js', array( 'jquery' ), '0.1', true );
 
 		wp_enqueue_style( LXP_SLUG . '-bootstrap-css' );
+		wp_enqueue_style( LXP_SLUG . '-styles', LXP_URL . 'assets/css/styles.css' );
 		wp_enqueue_script( LXP_SLUG . '-bootstrap-js' );
 		wp_enqueue_script( LXP_SLUG . '-scripts' );
 
@@ -58,7 +59,7 @@ class LXP_Admin {
 
 		add_settings_section(
 			LXP_SLUG . '_option',
-			'Link Option',
+			'LotteAds Settings',
 			array( $this, 'print_section_info' ),
 			LXP_SLUG
 		);
@@ -158,7 +159,7 @@ class LXP_Admin {
 		try {
 			$options = get_option(LXP_SLUG . '_option');
 			$api_url = 'https://www.thelotter.com/rss.xml?languageId=2&tl_affid=8831&chan=loteriasonline';
-			if ( isset($options ) ) {
+			if ( !empty($options['lxp-domain'] ) ) {
 				$api_url = $options['lxp-domain'] .
 				           '?languageId=' . $options['lxp-language-id'] .
 				           '&tl_affid=' . $options['lxp-tl-aff-id'] .

@@ -9,6 +9,7 @@
 */
 if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 	require_once( 'core/class-lxp-admin.php' );
+	require_once( 'core/class-lxp-connector.php' );
 
 	class Loterias_XML_Parser {
 		function __construct() {
@@ -22,31 +23,33 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 			DEFINE( 'LXP_CSS', LXP_URL . 'assets/css/' );
 			DEFINE( 'LXP_JS', LXP_URL . 'assets/js/' );
 
-			register_activation_hook( LXP_NAME, array( $this, 'activate' ) );
-			register_deactivation_hook( LXP_NAME, array( $this, 'deactivate' ) );
-			register_uninstall_hook( LXP_NAME, array( &$this, 'uninstall' ) );
+			register_activation_hook( LXP_NAME, array( &$this, 'lxp_activate' ) );
+			register_deactivation_hook( LXP_NAME, array( &$this, 'lxp_deactivate' ) );
+			register_uninstall_hook( LXP_NAME, array( &$this, 'lxp_uninstall' ) );
 
-			add_action( 'init', array( $this, 'lxp_register_post_type' ) );
-			add_action( 'add_meta_boxes', array( $this, 'lxp_add_custom_fields' ), 1 );
-			add_action( 'save_post_lottery', array( $this, 'save_post_lottery_callback' ) );
-			add_action( LXP_SLUG . '_cron_event', array( $this, 'run_lxp_api_connector' ) );
+			add_action( 'init', array( &$this, 'lxp_register_post_type' ) );
+			add_action( 'add_meta_boxes', array( &$this, 'lxp_add_custom_fields' ), 1 );
+			add_action( 'save_post_lottery', array( &$this, 'save_post_lottery_callback' ) );
+			wp_clear_scheduled_hook( 'loterias_xml_parser_cron_event' );
+			wp_schedule_event( strtotime( 'tomorrow' ), 'daily', 'loterias_xml_parser_cron_event' );
+			add_action( 'loterias_xml_parser_cron_event', array( &$this, 'run_lxp_api_connector' ) );
 
 
 			$page = new LXP_Admin();
 		}
 
-		public function activate() {
-			wp_clear_scheduled_hook( LXP_SLUG . '_cron_event' );
-			wp_schedule_event( time(), 'daily', LXP_SLUG . '_cron_event');
+		public function lxp_activate() {
+			wp_clear_scheduled_hook( 'loterias_xml_parser_cron_event' );
 		}
 
-		public function deactivate() {
-			wp_clear_scheduled_hook( LXP_SLUG . '_cron_event' );
+		public function lxp_deactivate() {
+			wp_clear_scheduled_hook( 'loterias_xml_parser_cron_event' );
+
 			return true;
 		}
 
-		public function uninstall() {
-			wp_clear_scheduled_hook( LXP_SLUG . '_cron_event' );
+		public function lxp_uninstall() {
+			wp_clear_scheduled_hook( 'loterias_xml_parser_cron_event' );
 			unregister_post_type( 'lottery' );
 		}
 
@@ -113,17 +116,32 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 		}
 
 		function save_post_lottery_callback( $post_id ) {
-			$data = $_POST['entry_properties'];
-			foreach ( $data as $key => $value ) {
-				update_post_meta( $post_id, $key, $value );
+			if ( isset( $_POST['entry_properties'] ) ) {
+				$data = $_POST['entry_properties'];
+				foreach ( $data as $key => $value ) {
+					update_post_meta( $post_id, $key, $value );
+				}
 			}
 
 			return $post_id;
 		}
 
-		function run_lxp_api_connector(){
-
-        }
+		function run_lxp_api_connector() {
+			try {
+				$options = get_option( LXP_SLUG . '_option' );
+				$api_url = 'https://www.thelotter.com/rss.xml?languageId=2&tl_affid=8831&chan=loteriasonline';
+				if ( ! empty( $options['lxp-domain'] ) ) {
+					$api_url = $options['lxp-domain'] .
+					           '?languageId=' . $options['lxp-language-id'] .
+					           '&tl_affid=' . $options['lxp-tl-aff-id'] .
+					           '&chan=' . $options['lxp-chan-id'];
+				}
+				$status = new Lxp_Connector( $api_url );
+				log( $status );
+			} catch ( Exception $ex ) {
+				log( $ex->getMessage() );
+			}
+		}
 	}
 
 	new Loterias_XML_Parser();

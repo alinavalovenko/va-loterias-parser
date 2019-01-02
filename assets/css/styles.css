@@ -1,0 +1,12 @@
+#lxp-submit-form{
+    margin: 0;
+    padding: 20px;
+    width: 500px;
+}
+#lxp-submit-form input{
+    width: 100%;
+}
+button#lxp-update-data {
+    float: right;
+    margin: 0 10px;
+}
