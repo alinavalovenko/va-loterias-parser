@@ -11,48 +11,43 @@ class Lxp_Connector {
 		$content_xml   = file_get_contents( $api_url );
 		$lotteries_xml = new SimpleXMLElement( $content_xml );
 		$lotteries_arr = json_decode( json_encode( $lotteries_xml ), true );
-		$this->convert_antries_to_post_type( $lotteries_arr['entry'] );
+		$status = $this->convert_entries_to_post_type( $lotteries_arr['entry'] );
 
-		return $lotteries_arr['entry'];
+		return json_encode($status);
 	}
 
-	protected function convert_antries_to_post_type( $entries = null ) {
+	protected function convert_entries_to_post_type( $entries = null ) {
+		$status = [];
 		foreach ( $entries as $id => $entry ) {
-			$lottery_id           = $entry['lottery_id'];
-			$title                = $entry['title'];
-			$published            = $entry['published'];
-			$updated              = $entry['updated'];
-			$post_content         = $entry['content'];
-			$link_id              = $entry['id'];
-			$lottery_logo         = $entry['lottery_logo'];
-			$last_draw_date       = $entry['last_draw_date'];
-			$last_draw_results    = $entry['last_draw_results'];
-			$next_draw_date       = $entry['next_draw_date'];
-			$next_draw_jackpot    = $entry['next_draw_jackpot'];
-			$next_draw_close_date = $entry['next_draw_close_date'];
-			$play_link            = $entry['play_link'];
+			$lottery_id           = empty($entry['lottery_id']) ? '': $entry['lottery_id'];
+			$title                = empty($entry['title']) ? '': $entry['title'];
+			$published            = empty($entry['published']) ? '': $entry['published'];
+			$updated              = empty($entry['updated']) ? '': $entry['updated'];
+			$post_content         = empty($entry['content']) ? '': $entry['content'];
+			$link_id              = empty($entry['id']) ? '': $entry['id'];
+			$lottery_logo         = empty($entry['lottery_logo']) ? '': $entry['lottery_logo'];
+			$last_draw_date       = empty($entry['last_draw_date']) ? '': $entry['last_draw_date'];
+			$last_draw_results    = empty($entry['last_draw_results']) ? '': $entry['last_draw_results'];
+			$next_draw_date       = empty($entry['next_draw_date']) ? '': $entry['next_draw_date'];
+			$next_draw_jackpot    = empty($entry['next_draw_jackpot']) ? '': $entry['next_draw_jackpot'];
+			$next_draw_close_date = empty($entry['next_draw_close_date']) ? '': $entry['next_draw_close_date'];
+			$play_link            = empty($entry['play_link']) ? '': $entry['play_link'];
 			$args                 = array(
-				'posts_per_page' => - 1,
-				'post_type'      => 'lotery',
-				'meta_query'     => array(
-					array(
-						'key'     => 'lottery_id',
-						'value'   => $lottery_id,
-						'compare' => 'LIKE',
-					),
-				)
+				'posts_per_page' => 1,
+				'post_type'      => 'lottery',
+				'meta_key'       => 'lottery_id',
+				'meta_value'     => $lottery_id
 			);
 			$post                 = get_posts( $args );
 			if ( ! empty( $post ) ) {
-				/*update here*/
-			} else {
 				$post_data = array(
+					'ID'           => $post[0]->ID,
 					'post_title'   => wp_strip_all_tags( $title ),
 					'post_content' => $post_content,
 					'post_status'  => 'publish',
 					'post_author'  => 1,
 					'post_date'    => $published,
-					'post_type'    => 'lotery',
+					'post_type'    => 'lottery',
 					'meta_input'   => array(
 						'lottery_id'           => $lottery_id,
 						'link_id'              => $link_id,
@@ -65,16 +60,43 @@ class Lxp_Connector {
 						'play_link'            => $play_link
 					),
 				);
-
-				$post_id = wp_insert_post( $post_data );
-				$this->set_featured_image($post_id, $lottery_logo, $title);
+				wp_update_post($post_data);
+				$this->updated_fetured_image($post[0]->ID, $lottery_logo);
+				$status[$post[0]->ID] = 'updated';
+			} else {
+				$post_data = array(
+					'post_title'   => wp_strip_all_tags( $title ),
+					'post_content' => $post_content,
+					'post_status'  => 'publish',
+					'post_author'  => 1,
+					'post_date'    => $published,
+					'post_type'    => 'lottery',
+					'meta_input'   => array(
+						'lottery_id'           => $lottery_id,
+						'link_id'              => $link_id,
+						'lottery_logo'         => $lottery_logo,
+						'last_draw_date'       => $last_draw_date,
+						'last_draw_results'    => $last_draw_results,
+						'next_draw_date'       => $next_draw_date,
+						'next_draw_jackpot'    => $next_draw_jackpot,
+						'next_draw_close_date' => $next_draw_close_date,
+						'play_link'            => $play_link
+					),
+				);
+				$post_id   = wp_insert_post( $post_data );
+				$this->set_featured_image( $post_id, $lottery_logo, $title );
+				$status[$post_id] = 'created';
 
 			}
 		}
+
+		return $status;
 	}
 
-	protected function set_featured_image( $post_id, $image_url = null, $lotary_name = '' ) {
-		$image_name       = empty($lotary_name) ? basename($image_url): $lotary_name;
+	protected function set_featured_image( $post_id, $image_url = null, $image_name = 'undefined' ) {
+		$image_size       = getimagesize( $image_url );
+		$image_format     = explode( '/', $image_size['mime'] )[1];
+		$image_name       = $image_name . '.' . $image_format;
 		$upload_dir       = wp_upload_dir();
 		$image_data       = file_get_contents( $image_url );
 		$unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name );
@@ -106,6 +128,16 @@ class Lxp_Connector {
 		wp_update_attachment_metadata( $attach_id, $attach_data );
 
 		set_post_thumbnail( $post_id, $attach_id );
+	}
+
+	protected function updated_fetured_image( $post_id, $image_url ) {
+		$old_image_url = get_post_meta( $post_id, 'lottery_logo', true );
+		if ( $image_url == $old_image_url ) {
+			return;
+		} else {
+			$post_title = get_the_title( $post_id );
+			$this->set_featured_image( $post_id, $image_url, $post_title );
+		}
 	}
 
 }

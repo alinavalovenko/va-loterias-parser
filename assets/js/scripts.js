@@ -27,7 +27,7 @@ jQuery(window).ready(function($) {
         };
 
         $.post(lxpObject.url, data, function (response) {
-            alert(response);
+            console.log(response);
         });
     });
 });
