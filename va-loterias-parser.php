@@ -81,7 +81,7 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 		}
 
 		function lxp_add_custom_fields() {
-			add_meta_box( 'extra_fields', 'Entry properties', array(
+			add_meta_box( 'extra_fields', 'LotteAds properties', array(
 				$this,
 				'entry_properties_callback'
 			), 'lottery', 'normal', 'high' );
