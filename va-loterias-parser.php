@@ -23,9 +23,9 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 			DEFINE( 'LXP_CSS', LXP_URL . 'assets/css/' );
 			DEFINE( 'LXP_JS', LXP_URL . 'assets/js/' );
 
-			register_activation_hook( LXP_NAME, array( &$this, 'lxp_activate' ) );
-			register_deactivation_hook( LXP_NAME, array( &$this, 'lxp_deactivate' ) );
-			register_uninstall_hook( LXP_NAME, array( &$this, 'lxp_uninstall' ) );
+			register_activation_hook( plugin_basename(__FILE__), array( &$this, 'lxp_activate' ) );
+			register_deactivation_hook( plugin_basename(__FILE__), array( &$this, 'lxp_deactivate' ) );
+			register_uninstall_hook( plugin_basename(__FILE__),  'lxp_uninstall' );
 
 			add_action( 'init', array( &$this, 'lxp_register_post_type' ) );
 			add_action( 'add_meta_boxes', array( &$this, 'lxp_add_custom_fields' ), 1 );
@@ -49,8 +49,7 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 		}
 
 		public function lxp_uninstall() {
-			wp_clear_scheduled_hook( 'loterias_xml_parser_cron_event' );
-			unregister_post_type( 'lottery' );
+
 		}
 
 		function lxp_register_post_type() {
@@ -137,12 +136,12 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 					           '&chan=' . $options['lxp-chan-id'];
 				}
 				$status = new Lxp_Connector( $api_url );
-				log( $status );
+				error_log( $status );
 			} catch ( Exception $ex ) {
-				log( $ex->getMessage() );
+				error_log( $ex->getMessage() );
 			}
 		}
 	}
-
-	new Loterias_XML_Parser();
 }
+global $lotteAds;
+$lotteAds = new Loterias_XML_Parser();
