@@ -33,14 +33,15 @@ class Lxp_Connector {
 			$play_link            = $entry['play_link'];
 			$args                 = array(
 				'posts_per_page' => - 1,
-				'post_type'      => 'entry',
-				'meta_query'    => array(
+				'post_type'      => 'lotery',
+				'meta_query'     => array(
 					array(
-						'key'       => 'lottery_id',
-						'value'     => $lottery_id,
-						'compare'   => 'LIKE',
+						'key'     => 'lottery_id',
+						'value'   => $lottery_id,
+						'compare' => 'LIKE',
 					),
-			));
+				)
+			);
 			$post                 = get_posts( $args );
 			if ( ! empty( $post ) ) {
 				/*update here*/
@@ -51,7 +52,7 @@ class Lxp_Connector {
 					'post_status'  => 'publish',
 					'post_author'  => 1,
 					'post_date'    => $published,
-					'post_type'    => 'entry',
+					'post_type'    => 'lotery',
 					'meta_input'   => array(
 						'lottery_id'           => $lottery_id,
 						'link_id'              => $link_id,
@@ -66,9 +67,45 @@ class Lxp_Connector {
 				);
 
 				$post_id = wp_insert_post( $post_data );
+				$this->set_featured_image($post_id, $lottery_logo, $title);
 
 			}
 		}
+	}
+
+	protected function set_featured_image( $post_id, $image_url = null, $lotary_name = '' ) {
+		$image_name       = empty($lotary_name) ? basename($image_url): $lotary_name;
+		$upload_dir       = wp_upload_dir();
+		$image_data       = file_get_contents( $image_url );
+		$unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name );
+		$filename         = basename( $unique_file_name );
+
+		if ( wp_mkdir_p( $upload_dir['path'] ) ) {
+			$file = $upload_dir['path'] . '/' . $filename;
+		} else {
+			$file = $upload_dir['basedir'] . '/' . $filename;
+		}
+
+		file_put_contents( $file, $image_data );
+
+		$wp_filetype = wp_check_filetype( $filename, null );
+
+		$attachment = array(
+			'post_mime_type' => $wp_filetype['type'],
+			'post_title'     => sanitize_file_name( $filename ),
+			'post_content'   => '',
+			'post_status'    => 'inherit'
+		);
+
+		$attach_id = wp_insert_attachment( $attachment, $file, $post_id );
+
+		require_once( ABSPATH . 'wp-admin/includes/image.php' );
+
+		$attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+
+		wp_update_attachment_metadata( $attach_id, $attach_data );
+
+		set_post_thumbnail( $post_id, $attach_id );
 	}
 
 }

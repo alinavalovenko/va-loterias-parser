@@ -47,17 +47,17 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
         }
 
 	    function lxp_register_post_type(){
-		    register_post_type('entry', array(
+		    register_post_type('lotery', array(
 			    'labels'             => array(
-				    'name'               => 'Entries', // Основное название типа записи
-				    'singular_name'      => 'Entry', // отдельное название записи типа Book
+				    'name'               => 'LotteAds', // Основное название типа записи
+				    'singular_name'      => 'LotteAd', // отдельное название записи типа Book
 				    'add_new'            => 'Add new',
-				    'add_new_item'       => 'Add new Entry',
-				    'edit_item'          => 'Edit Entry',
-				    'new_item'           => 'New Entry',
-				    'view_item'          => 'View Entry',
-				    'search_items'       => 'Find Entry',
-				    'menu_name'          => 'Entries'
+				    'add_new_item'       => 'Add new LotteAd',
+				    'edit_item'          => 'Edit LotteAd',
+				    'new_item'           => 'New LotteAd',
+				    'view_item'          => 'View LotteAd',
+				    'search_items'       => 'Find LotteAd',
+				    'menu_name'          => 'LotteAds'
 
 			    ),
 			    'public'             => false,
@@ -75,7 +75,7 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 	    }
 
 	    function lxp_add_custom_fields(){
-		    add_meta_box( 'extra_fields', 'Entry properties', array($this, 'entry_properties_callback'), 'entry', 'normal', 'high'  );
+		    add_meta_box( 'extra_fields', 'Entry properties', array($this, 'entry_properties_callback'), 'lotery', 'normal', 'high'  );
 
 	    }
 
