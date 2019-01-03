@@ -1,6 +1,6 @@
 <?php
 /*
-	Plugin Name: Loterias XML Parser
+	Plugin Name: LotteAds
 	Description: Convert XML offers into WP posts
 	Version: 1.0
 	Author: Alina Valovenko
@@ -26,7 +26,7 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 
 			DEFINE( 'LXP_DIR', plugin_dir_path( __FILE__ ) );
 			DEFINE( 'LXP_URL', plugin_dir_url( __FILE__ ) );
-			DEFINE( 'LXP_NAME', 'Loterias XML Parser' );
+			DEFINE( 'LXP_NAME', 'LotteAds' );
 			DEFINE( 'LXP_SLUG', 'loterias-xml-parser' );
 			DEFINE( 'LXP_CORE', LXP_DIR . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR );
 			DEFINE( 'LXP_VIEW', LXP_DIR . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR );

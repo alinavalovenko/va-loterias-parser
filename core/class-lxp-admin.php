@@ -15,8 +15,8 @@ class LXP_Admin {
 
 	public function lpx_add_admin_page() {
 		add_menu_page(
-			'LotteAds Settings',
-			LXP_NAME,
+			LXP_NAME . 'Settings',
+			LXP_NAME . ' Settings',
 			'manage_options',
 			LXP_SLUG,
 			array( $this, 'create_admin_page' )
