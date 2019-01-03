@@ -35,6 +35,7 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 			add_action( 'loterias_xml_parser_cron_event', array( &$this, 'run_lxp_api_connector' ) );
 
 
+
 			$page = new LXP_Admin();
 		}
 
@@ -90,7 +91,7 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 
 		function entry_properties_callback( $post ) {
 			?>
-            <div>
+            <div class="lpx-metabox">
                 <label>Lottery id: <input readonly="readonly" type="text" name="entry_properties[lottery_id]"
                                           value="<?php echo get_post_meta( $post->ID, 'lottery_id', 1 ); ?>"/></label>
                 <label>Lottery id (link): <input type="text" name="entry_properties[link_id]"

@@ -6,6 +6,7 @@ class LXP_Admin {
 	public function __construct() {
 		$this->options = get_option( LXP_SLUG . '_opstion' );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action('admin_enqueue_scripts', array( $this,'custom_metabox_styles'), 11);
 		add_action( 'admin_menu', array( $this, 'lpx_add_admin_page' ) );
 		add_action( 'admin_init', array( $this, 'page_init' ) );
 		add_action( 'wp_ajax_lpx_save_options', array( $this, 'save_options' ) );
@@ -47,6 +48,10 @@ class LXP_Admin {
 			array(
 				'url' => admin_url( 'admin-ajax.php' )
 			) );
+	}
+
+	public function custom_metabox_styles(){
+		wp_enqueue_style( LXP_SLUG . '-styles', LXP_URL . 'assets/css/styles.css' );
 	}
 
 	public function page_init() {

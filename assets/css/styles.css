@@ -59,3 +59,10 @@ button#lxp-update-data {
     top: 36%;
     left: 130px;
 }
+
+.lpx-metabox input {
+    width: 100%;
+}
+.lpx-metabox label{
+    padding: 15px 0;
+}
