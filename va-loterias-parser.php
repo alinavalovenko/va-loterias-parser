@@ -61,6 +61,9 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 			wp_clear_scheduled_hook( 'loterias_xml_parser_cron_event' );
 		}
 
+		/**
+		 * Register 'lottery' post type
+		 */
 		function lxp_register_post_type() {
 			register_post_type( 'lottery', array(
 				'labels'             => array(
