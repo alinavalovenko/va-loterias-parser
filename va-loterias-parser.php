@@ -46,7 +46,7 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 		}
 
 		public function lxp_uninstall() {
-
+			wp_clear_scheduled_hook( 'loterias_xml_parser_cron_event' );
 		}
 
 		function lxp_register_post_type() {
