@@ -7,12 +7,23 @@
 	Author URI: http://www.valovenko.pro
 	License: GPL2
 */
+
+/**
+ * This plugin is used for process the XML document received through the API request.
+ * The data converts into a 'lottery' post type and store in the database.
+ * Data synchronization occurs on schedule every day at 01:00.
+ * Ability to start synchronization on the settings page has also implemented
+ */
+
 if ( ! class_exists( "Loterias_XML_Parser" ) ) {
+
 	require_once( 'core/class-lxp-admin.php' );
 	require_once( 'core/class-lxp-connector.php' );
 
 	class Loterias_XML_Parser {
+
 		function __construct() {
+
 			DEFINE( 'LXP_DIR', plugin_dir_path( __FILE__ ) );
 			DEFINE( 'LXP_URL', plugin_dir_url( __FILE__ ) );
 			DEFINE( 'LXP_NAME', 'Loterias XML Parser' );
@@ -23,16 +34,17 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 			DEFINE( 'LXP_CSS', LXP_URL . 'assets/css/' );
 			DEFINE( 'LXP_JS', LXP_URL . 'assets/js/' );
 
-			register_activation_hook( plugin_basename(__FILE__), array( &$this, 'lxp_activate' ) );
-			register_deactivation_hook( plugin_basename(__FILE__), array( &$this, 'lxp_deactivate' ) );
-			register_uninstall_hook( plugin_basename(__FILE__),  'lxp_uninstall' );
+			register_activation_hook( plugin_basename( __FILE__ ), array( &$this, 'lxp_activate' ) );
+			register_deactivation_hook( plugin_basename( __FILE__ ), array( &$this, 'lxp_deactivate' ) );
+			register_uninstall_hook( plugin_basename( __FILE__ ), 'lxp_uninstall' );
 
 			add_action( 'init', array( &$this, 'lxp_register_post_type' ) );
 			add_action( 'add_meta_boxes', array( &$this, 'lxp_add_custom_fields' ), 1 );
 			add_action( 'save_post_lottery', array( &$this, 'save_post_lottery_callback' ) );
-			wp_schedule_event( strtotime( 'tomorrow' )+3600, 'daily', 'loterias_xml_parser_cron_event' );
+			wp_schedule_event( strtotime( 'tomorrow' ) + 3600, 'daily', 'loterias_xml_parser_cron_event' );
 			add_action( 'loterias_xml_parser_cron_event', array( &$this, 'run_lxp_api_connector' ) );
-			$page = new LXP_Admin();
+
+			$settings_page = new LXP_Admin();
 		}
 
 		public function lxp_activate() {
@@ -77,6 +89,9 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 			) );
 		}
 
+		/**
+         * Add Meta box for 'lottery' post type
+		 */
 		function lxp_add_custom_fields() {
 			add_meta_box( 'extra_fields', 'LotteAds properties', array(
 				$this,
@@ -85,6 +100,10 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 
 		}
 
+		/**
+         * Markup of custom meta fields
+		 * @param $post
+		 */
 		function entry_properties_callback( $post ) {
 			?>
             <div class="lpx-metabox">
@@ -111,7 +130,15 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 			<?php
 		}
 
+		/**
+		 * @param $post_id
+		 *
+		 * Update value of 'lottery' entity
+         *
+		 * @return $post_id
+		 */
 		function save_post_lottery_callback( $post_id ) {
+		    //check if entry_properties were pass
 			if ( isset( $_POST['entry_properties'] ) ) {
 				$data = $_POST['entry_properties'];
 				foreach ( $data as $key => $value ) {
@@ -122,6 +149,9 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 			return $post_id;
 		}
 
+		/**
+		 * Cron action - run sync on a schedule
+		 */
 		function run_lxp_api_connector() {
 			try {
 				$options = get_option( LXP_SLUG . '_option' );

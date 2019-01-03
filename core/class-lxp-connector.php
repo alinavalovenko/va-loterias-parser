@@ -1,6 +1,7 @@
 <?php
 
 class Lxp_Connector {
+
 	public $data;
 
 	public function __construct( $api_url ) {
@@ -8,17 +9,27 @@ class Lxp_Connector {
 	}
 
 	protected function get_entries_by_api( $api_url ) {
+		// grab data by url
 		$content_xml   = file_get_contents( $api_url );
 		$lotteries_xml = new SimpleXMLElement( $content_xml );
+		//convert xml to array
 		$lotteries_arr = json_decode( json_encode( $lotteries_xml ), true );
 		$status = $this->convert_entries_to_post_type( $lotteries_arr['entry'] );
 
 		return $status;
 	}
 
+	/**
+	 * Convert entries from xml to 'lottery' post types
+	 *
+	 * @param null $entries
+	 *
+	 * @return string 'success' if import was successful
+	 */
 	protected function convert_entries_to_post_type( $entries = null ) {
 		$status = 'error';
 		foreach ( $entries as $id => $entry ) {
+			// set up variables with new value
 			$lottery_id           = empty($entry['lottery_id']) ? '': $entry['lottery_id'];
 			$title                = empty($entry['title']) ? '': $entry['title'];
 			$published            = empty($entry['published']) ? '': $entry['published'];
@@ -39,7 +50,9 @@ class Lxp_Connector {
 				'meta_value'     => $lottery_id
 			);
 			$post                 = get_posts( $args );
+			// check if we alredy have similar offer.
 			if ( ! empty( $post ) ) {
+				//Lottery will be update with new values
 				$post_data = array(
 					'ID'           => $post[0]->ID,
 					'post_title'   => wp_strip_all_tags( $title ),
@@ -63,6 +76,7 @@ class Lxp_Connector {
 				wp_update_post($post_data);
 				$this->updated_fetured_image($post[0]->ID, $lottery_logo);
 			} else {
+				//create new lottery item
 				$post_data = array(
 					'post_title'   => wp_strip_all_tags( $title ),
 					'post_content' => $post_content,
@@ -83,17 +97,26 @@ class Lxp_Connector {
 					),
 				);
 				$post_id   = wp_insert_post( $post_data );
+				//import lottery logo and set up it as featured image
 				$this->set_featured_image( $post_id, $lottery_logo, $title );
 			}
 		}
 		$status = 'success';
+
 		return $status;
 	}
 
+	/**
+	 * Import logo image and set up it as post featured image
+	 *
+	 * @param $post_id
+	 * @param null $image_url
+	 * @param string $image_name
+	 */
 	protected function set_featured_image( $post_id, $image_url = null, $image_name = 'undefined' ) {
 		$image_size       = getimagesize( $image_url );
-		$image_format     = explode( '/', $image_size['mime'] )[1];
-		$image_name       = $image_name . '.' . $image_format;
+		$image_format     = explode( '/', $image_size['mime'] )[1]; // define image format
+		$image_name       = $image_name . '.' . $image_format; // create correct image name
 		$upload_dir       = wp_upload_dir();
 		$image_data       = file_get_contents( $image_url );
 		$unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name );
@@ -105,7 +128,7 @@ class Lxp_Connector {
 			$file = $upload_dir['basedir'] . '/' . $filename;
 		}
 
-		file_put_contents( $file, $image_data );
+		file_put_contents( $file, $image_data ); // paste image to upload folder
 
 		$wp_filetype = wp_check_filetype( $filename, null );
 
@@ -115,7 +138,7 @@ class Lxp_Connector {
 			'post_content'   => '',
 			'post_status'    => 'inherit'
 		);
-
+		// save image meta into data base
 		$attach_id = wp_insert_attachment( $attachment, $file, $post_id );
 
 		require_once( ABSPATH . 'wp-admin/includes/image.php' );
@@ -127,6 +150,11 @@ class Lxp_Connector {
 		set_post_thumbnail( $post_id, $attach_id );
 	}
 
+	/**
+	 * Update current version of logo, if we have got new one
+	 * @param $post_id
+	 * @param $image_url
+	 */
 	protected function updated_fetured_image( $post_id, $image_url ) {
 		$old_image_url = get_post_meta( $post_id, 'lottery_logo', true );
 		if ( $image_url == $old_image_url ) {
