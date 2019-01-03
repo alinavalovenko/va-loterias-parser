@@ -30,12 +30,8 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 			add_action( 'init', array( &$this, 'lxp_register_post_type' ) );
 			add_action( 'add_meta_boxes', array( &$this, 'lxp_add_custom_fields' ), 1 );
 			add_action( 'save_post_lottery', array( &$this, 'save_post_lottery_callback' ) );
-			wp_clear_scheduled_hook( 'loterias_xml_parser_cron_event' );
 			wp_schedule_event( strtotime( 'tomorrow' )+3600, 'daily', 'loterias_xml_parser_cron_event' );
 			add_action( 'loterias_xml_parser_cron_event', array( &$this, 'run_lxp_api_connector' ) );
-
-
-
 			$page = new LXP_Admin();
 		}
 
