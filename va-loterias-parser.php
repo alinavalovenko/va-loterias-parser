@@ -63,7 +63,7 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 					'menu_name'     => 'LotteAds'
 
 				),
-				'public'             => false,
+				'public'             => true,
 				'publicly_queryable' => true,
 				'show_ui'            => true,
 				'show_in_menu'       => true,
