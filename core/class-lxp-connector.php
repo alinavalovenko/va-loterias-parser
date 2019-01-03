@@ -13,11 +13,11 @@ class Lxp_Connector {
 		$lotteries_arr = json_decode( json_encode( $lotteries_xml ), true );
 		$status = $this->convert_entries_to_post_type( $lotteries_arr['entry'] );
 
-		return json_encode($status);
+		return $status;
 	}
 
 	protected function convert_entries_to_post_type( $entries = null ) {
-		$status = [];
+		$status = 'error';
 		foreach ( $entries as $id => $entry ) {
 			$lottery_id           = empty($entry['lottery_id']) ? '': $entry['lottery_id'];
 			$title                = empty($entry['title']) ? '': $entry['title'];
@@ -62,7 +62,6 @@ class Lxp_Connector {
 				);
 				wp_update_post($post_data);
 				$this->updated_fetured_image($post[0]->ID, $lottery_logo);
-				$status[$post[0]->ID] = 'updated';
 			} else {
 				$post_data = array(
 					'post_title'   => wp_strip_all_tags( $title ),
@@ -85,11 +84,9 @@ class Lxp_Connector {
 				);
 				$post_id   = wp_insert_post( $post_data );
 				$this->set_featured_image( $post_id, $lottery_logo, $title );
-				$status[$post_id] = 'created';
-
 			}
 		}
-
+		$status = 'success';
 		return $status;
 	}
 
