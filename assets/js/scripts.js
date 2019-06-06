@@ -7,6 +7,7 @@ jQuery(window).ready(function ($) {
 
     settingsForm.submit(event, function () {
         event.preventDefault();
+        var apiurl = settingsForm.find('input[name="loterias-xml-parser_option[lxp-api-url]"]').val();
         var domain = settingsForm.find('input[name="loterias-xml-parser_option[lxp-domain]"]').val();
         var langID = settingsForm.find('input[name="loterias-xml-parser_option[lxp-language-id]"]').val();
         var affID = settingsForm.find('input[name="loterias-xml-parser_option[lxp-tl-aff-id]"]').val();
@@ -16,7 +17,8 @@ jQuery(window).ready(function ($) {
             domain: domain,
             langid: langID,
             affid: affID,
-            chan: chan
+            chan: chan,
+            apiurl: apiurl
         };
 
         $.post(lxpObject.url, data, function (response) {

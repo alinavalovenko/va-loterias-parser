@@ -70,6 +70,14 @@ class LXP_Admin {
 		);
 
 		add_settings_field(
+			'lxp-api-url',
+			'Full api url',
+			array( $this, 'lxp_api_url_callback' ),
+			LXP_SLUG,
+			LXP_SLUG . '_option'
+		);
+
+		add_settings_field(
 			'lxp-domain',
 			'Domain',
 			array( $this, 'lxp_domain_callback' ),
@@ -118,6 +126,12 @@ class LXP_Admin {
 		echo '';
 	}
 
+	public function lxp_api_url_callback() {
+		printf(
+			'<input type="text"   name="' . LXP_SLUG . '_option[lxp-api-url]" value="%s"/>',
+			isset( $this->options['lxp-api-url'] ) ? esc_attr( $this->options['lxp-api-url'] ) : 'https://www.thelotter.com/rss.xml?languageId=2&tl_affid=8831&chan=loteriasonline'
+		);
+	}
 	public function lxp_domain_callback() {
 		printf(
 			'<input type="text"   name="' . LXP_SLUG . '_option[lxp-domain]" value="%s"/>',
@@ -148,6 +162,7 @@ class LXP_Admin {
 
 	function save_options() {
 		try {
+			$options['lxp-api-url']      = $_POST['apiurl'];
 			$options['lxp-domain']      = $_POST['domain'];
 			$options['lxp-language-id'] = $_POST['langid'];
 			$options['lxp-tl-aff-id']   = $_POST['affid'];
@@ -164,7 +179,9 @@ class LXP_Admin {
 		try {
 			$options = get_option(LXP_SLUG . '_option');
 			$api_url = 'https://www.thelotter.com/rss.xml?languageId=2&tl_affid=8831&chan=loteriasonline';
-			if ( !empty($options['lxp-domain'] ) ) {
+			if(!empty($options['lxp-api-url'])){
+				$api_url = $options['lxp-api-url'];
+			} elseif ( empty($options['lxp-domain'] ) ) {
 				$api_url = $options['lxp-domain'] .
 				           '?languageId=' . $options['lxp-language-id'] .
 				           '&tl_affid=' . $options['lxp-tl-aff-id'] .

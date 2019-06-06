@@ -36,7 +36,7 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 
 			register_activation_hook( plugin_basename( __FILE__ ), array( &$this, 'lxp_activate' ) );
 			register_deactivation_hook( plugin_basename( __FILE__ ), array( &$this, 'lxp_deactivate' ) );
-			register_uninstall_hook( plugin_basename( __FILE__ ), 'lxp_uninstall' );
+			register_uninstall_hook( plugin_basename( __FILE__ ), array('Loterias_XML_Parser', 'lxp_uninstall' ));
 
 			add_action( 'init', array( &$this, 'lxp_register_post_type' ) );
 			add_action( 'add_meta_boxes', array( &$this, 'lxp_add_custom_fields' ), 1 );
@@ -158,7 +158,7 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 		function run_lxp_api_connector() {
 			try {
 				$options = get_option( LXP_SLUG . '_option' );
-				$api_url = 'https://www.thelotter.com/rss.xml?languageId=2&tl_affid=8831&chan=loteriasonline';
+				$api_url = 'https://www.thelotter.com/rss.xml?lotteryIds=10,20,30&languageId=2&tl_affid=9578&chan=loteriasonline';
 				if ( ! empty( $options['lxp-domain'] ) ) {
 					$api_url = $options['lxp-domain'] .
 					           '?languageId=' . $options['lxp-language-id'] .
