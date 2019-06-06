@@ -6,6 +6,7 @@ class Lxp_Connector {
 
 	public function __construct( $api_url ) {
 		$this->data = $this->get_entries_by_api( $api_url );
+		add_action( 'before_delete_post', [$this,'delete_attachments_with_post'] );
 	}
 
 	protected function get_entries_by_api( $api_url ) {
@@ -28,6 +29,7 @@ class Lxp_Connector {
 	 */
 	protected function convert_entries_to_post_type( $entries = null ) {
 		$status = 'error';
+		$this->remove_old_data();
 		foreach ( $entries as $id => $entry ) {
 			// set up variables with new value
 			$lottery_id           = empty($entry['lottery_id']) ? '': $entry['lottery_id'];
@@ -162,6 +164,32 @@ class Lxp_Connector {
 		} else {
 			$post_title = get_the_title( $post_id );
 			$this->set_featured_image( $post_id, $image_url, $post_title );
+		}
+	}
+
+	/***
+	 * clean up lottery list
+	 */
+	protected function remove_old_data(){
+		$list = get_posts('numberposts=-1&post_type=lottery&post_status=any' );
+		foreach ($list as $post){
+			wp_delete_post($post->ID, true);
+		}
+	}
+
+	/***
+	 * Remove all attachments connected with the post
+	 *
+	 * @param $postid
+	 */
+	function delete_attachments_with_post( $postid ){
+		$post = get_post( $postid );
+
+		if( in_array($post->post_type, ['lottery']) ){
+			$attachments = get_children( array( 'post_type'=>'attachment', 'post_parent'=>$postid ) );
+			if( $attachments ){
+				foreach( $attachments as $attachment ) wp_delete_attachment( $attachment->ID );
+			}
 		}
 	}
 
