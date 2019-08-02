@@ -34,21 +34,24 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 			DEFINE( 'LXP_CSS', LXP_URL . 'assets/css/' );
 			DEFINE( 'LXP_JS', LXP_URL . 'assets/js/' );
 
-			register_activation_hook( plugin_basename( __FILE__ ), array( &$this, 'lxp_activate' ) );
-			register_deactivation_hook( plugin_basename( __FILE__ ), array( &$this, 'lxp_deactivate' ) );
-			register_uninstall_hook( plugin_basename( __FILE__ ), array('Loterias_XML_Parser', 'lxp_uninstall' ));
+			register_activation_hook( plugin_basename( __FILE__ ), array( $this, 'lxp_activate' ) );
+			register_deactivation_hook( plugin_basename( __FILE__ ), array( $this, 'lxp_deactivate' ) );
+			register_uninstall_hook( plugin_basename( __FILE__ ), array( 'Loterias_XML_Parser', 'lxp_uninstall' ) );
 
 			add_action( 'init', array( &$this, 'lxp_register_post_type' ) );
 			add_action( 'add_meta_boxes', array( &$this, 'lxp_add_custom_fields' ), 1 );
 			add_action( 'save_post_lottery', array( &$this, 'save_post_lottery_callback' ) );
-			wp_schedule_event( strtotime( 'tomorrow' ) + 3600, 'daily', 'loterias_xml_parser_cron_event' );
-			add_action( 'loterias_xml_parser_cron_event', array( &$this, 'run_lxp_api_connector' ) );
+
+			add_action( 'loterias_xml_parser_cron_event', array( $this, 'run_lxp_api_connector' ) );
 
 			$settings_page = new LXP_Admin();
 		}
 
 		public function lxp_activate() {
 			wp_clear_scheduled_hook( 'loterias_xml_parser_cron_event' );
+			if ( ! wp_next_scheduled( 'loterias_xml_parser_cron_event' ) ) {
+				wp_schedule_event( time(), 'hourly', 'loterias_xml_parser_cron_event' );
+			}
 		}
 
 		public function lxp_deactivate() {
@@ -93,7 +96,7 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 		}
 
 		/**
-         * Add Meta box for 'lottery' post type
+		 * Add Meta box for 'lottery' post type
 		 */
 		function lxp_add_custom_fields() {
 			add_meta_box( 'extra_fields', 'LotteAds properties', array(
@@ -104,7 +107,8 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 		}
 
 		/**
-         * Markup of custom meta fields
+		 * Markup of custom meta fields
+		 *
 		 * @param $post
 		 */
 		function entry_properties_callback( $post ) {
@@ -137,11 +141,11 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 		 * @param $post_id
 		 *
 		 * Update value of 'lottery' entity
-         *
+		 *
 		 * @return $post_id
 		 */
 		function save_post_lottery_callback( $post_id ) {
-		    //check if entry_properties were pass
+			//check if entry_properties were pass
 			if ( isset( $_POST['entry_properties'] ) ) {
 				$data = $_POST['entry_properties'];
 				foreach ( $data as $key => $value ) {
@@ -158,7 +162,7 @@ if ( ! class_exists( "Loterias_XML_Parser" ) ) {
 		function run_lxp_api_connector() {
 			try {
 				$options = get_option( LXP_SLUG . '_option' );
-				$api_url = 'https://www.thelotter.com/rss.xml?lotteryIds=10,20,30&languageId=2&tl_affid=9578&chan=loteriasonline';
+				$api_url = 'https://www.thelotter.com/rss.xml?languageId=2&lotteryIds=11,25,60,88,99,113,146,151,152,153,161,162,174,193,194,195,205&tl_affid=9578&chan=loteriasonline';
 				if ( ! empty( $options['lxp-domain'] ) ) {
 					$api_url = $options['lxp-domain'] .
 					           '?languageId=' . $options['lxp-language-id'] .

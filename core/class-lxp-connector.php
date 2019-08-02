@@ -6,7 +6,6 @@ class Lxp_Connector {
 
 	public function __construct( $api_url ) {
 		$this->data = $this->get_entries_by_api( $api_url );
-		add_action( 'before_delete_post', [$this,'delete_attachments_with_post'] );
 	}
 
 	protected function get_entries_by_api( $api_url ) {
@@ -15,9 +14,24 @@ class Lxp_Connector {
 		$lotteries_xml = new SimpleXMLElement( $content_xml );
 		//convert xml to array
 		$lotteries_arr = json_decode( json_encode( $lotteries_xml ), true );
+/* dror - 29-6-2019 - use the sorted entries (sorted by next_draw_date)
 		$status = $this->convert_entries_to_post_type( $lotteries_arr['entry'] );
-
+*/		
+		$sorted_entries = $lotteries_arr['entry'];
+		usort($sorted_entries, "compare_entries_by_next_draw_date");
+		$status = $this->convert_entries_to_post_type( $sorted_entries );
 		return $status;
+	}
+	
+	/**
+	 * (dror - 29-6-2019)
+	 * compares two entries by their 'next_draw_date time strings,
+	 * which are expected to be in the format "29/06/2019 19:30 GMT"
+	 */
+	protected function compare_entries_by_next_draw_date( $a, $b ) {
+		$a_timestamp = strtotime(str_replace('/', '-', $a['next_draw_date']));
+		$b_timestamp = strtotime(str_replace('/', '-', $b['next_draw_date']));
+		return strcmp($a_timestamp, $b_timestamp);
 	}
 
 	/**
@@ -158,6 +172,7 @@ class Lxp_Connector {
 	 * @param $image_url
 	 */
 	protected function updated_fetured_image( $post_id, $image_url ) {
+		$this->delete_attachments_with_post($post_id);
 		$old_image_url = get_post_meta( $post_id, 'lottery_logo', true );
 		if ( $image_url == $old_image_url ) {
 			return;
@@ -173,6 +188,7 @@ class Lxp_Connector {
 	protected function remove_old_data(){
 		$list = get_posts('numberposts=-1&post_type=lottery&post_status=any' );
 		foreach ($list as $post){
+			$this->delete_attachments_with_post($post->ID);
 			wp_delete_post($post->ID, true);
 		}
 	}

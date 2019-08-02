@@ -127,9 +127,15 @@ class LXP_Admin {
 	}
 
 	public function lxp_api_url_callback() {
+/* dror - 28/6/2019 - updated the url
 		printf(
 			'<input type="text"   name="' . LXP_SLUG . '_option[lxp-api-url]" value="%s"/>',
 			isset( $this->options['lxp-api-url'] ) ? esc_attr( $this->options['lxp-api-url'] ) : 'https://www.thelotter.com/rss.xml?languageId=2&tl_affid=8831&chan=loteriasonline'
+		);
+*/
+		printf(
+			'<input type="text"   name="' . LXP_SLUG . '_option[lxp-api-url]" value="%s"/>',
+			isset( $this->options['lxp-api-url'] ) ? esc_attr( $this->options['lxp-api-url'] ) : 'https://www.thelotter.com/rss.xml?languageId=2&lotteryIds=11,25,60,88,99,113,146,151,152,153,161,162,174,193,194,195,205&tl_affid=9578&chan=loteriasonline'
 		);
 	}
 	public function lxp_domain_callback() {
@@ -147,9 +153,15 @@ class LXP_Admin {
 	}
 
 	public function lxp_affiliate_id_callback() {
+/* dror - 28/6/2019 - change affid from 8831 to 9578
 		printf(
 			'<input type="text"   name="' . LXP_SLUG . '_option[lxp-tl-aff-id]" value="%s"/>',
 			isset( $this->options['lxp-tl-aff-id'] ) ? esc_attr( $this->options['lxp-tl-aff-id'] ) : '8831'
+		);
+*/
+		printf(
+			'<input type="text"   name="' . LXP_SLUG . '_option[lxp-tl-aff-id]" value="%s"/>',
+			isset( $this->options['lxp-tl-aff-id'] ) ? esc_attr( $this->options['lxp-tl-aff-id'] ) : '9578'
 		);
 	}
 
@@ -178,7 +190,10 @@ class LXP_Admin {
 	function update_data() {
 		try {
 			$options = get_option(LXP_SLUG . '_option');
+/* dror - 28/6/2019 - updated the url
 			$api_url = 'https://www.thelotter.com/rss.xml?languageId=2&tl_affid=8831&chan=loteriasonline';
+*/
+			$api_url = 'https://www.thelotter.com/rss.xml?languageId=2&lotteryIds=11,25,60,88,99,113,146,151,152,153,161,162,174,193,194,195,205&tl_affid=9578&chan=loteriasonline';
 			if(!empty($options['lxp-api-url'])){
 				$api_url = $options['lxp-api-url'];
 			} elseif ( empty($options['lxp-domain'] ) ) {
